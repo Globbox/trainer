@@ -1,9 +1,9 @@
 FROM node:lts-alpine as builder
 
 WORKDIR /app
-COPY $FRONTEND_PATH/package*.json ./
+COPY ./frontend/package*.json ./
 RUN npm install
-COPY $FRONTEND_PATH/ .
+COPY ./frontend ./
 RUN npm run build
 
 FROM nginx:stable-alpine

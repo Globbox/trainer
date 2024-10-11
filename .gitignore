@@ -1,0 +1,20 @@
+__pycache__/
+*.py[cod]
+*$py.class
+
+.idea/
+.vscode/
+.venv/
+.local/
+.pytest_cache/
+static/
+media/
+logs/
+
+# ENV файлы
+.env
+.deploy-config
+
+# Папки для deploy
+certs/
+frontend/

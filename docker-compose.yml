@@ -1,31 +1,30 @@
 services:
   web:
-    build:
-      context: ${BACKEND_PATH}
-      dockerfile: docker/prod/Dockerfile
+    image: ${BACKEND_IMAGE}:${BACKEND_TAG}
     restart: always
     expose:
       - 4000
     env_file:
-      - ./englishPortalBackend/.env
+      - .env
     depends_on:
       - db
-    entrypoint: ["entrypoint.sh"]
+    entrypoint: ["runserver.sh"]
     volumes:
+      - logs_volume:/www/logs
       - static_volume:/www/static
       - media_volume:/www/media
 
   celery:
-    build:
-      context: ${BACKEND_PATH}
-      dockerfile: docker/prod/Dockerfile
+    image: ${BACKEND_IMAGE}:${BACKEND_TAG}
     restart: always
     env_file:
-      - ./englishPortalBackend/.env
+      - .env
     depends_on:
       - redis
     entrypoint: celery -A trainer_backend.celery_config:celery_app worker -l INFO -n trainer-worker@%n -Q default
     volumes:
+      - logs_volume:/www/logs
+      - static_volume:/www/static
       - media_volume:/www/media
 
   redis:
@@ -36,23 +35,32 @@ services:
   db:
     image: mysql:8.3.0
     restart: always
+    environment:
+      MYSQL_DATABASE: $DB_NAME
+      MYSQL_USER: $DB_USER
+      MYSQL_PASSWORD: $DB_PASS
+      MYSQL_ROOT_PASSWORD: $DB_ROOT_PASS
     env_file:
-      - ./englishPortalBackend/.env
+      - .env
     volumes:
       - db_data:/var/lib/mysql
 
   nginx:
     restart: always
-    build: 
+    build:
       context: .
       dockerfile: nginx/Dockerfile
+    env_file:
+      - .env
     ports:
       - "80:80"
     volumes:
+      - ./certs:/etc/nginx/certs:ro
       - static_volume:/www/static
       - media_volume:/www/media
 
 volumes:
   db_data:
+  logs_volume:
   static_volume:
   media_volume:
