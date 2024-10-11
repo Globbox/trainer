@@ -1,0 +1,63 @@
+services:
+  web:
+    build:
+      context: ${BACKEND_PATH}
+      dockerfile: docker/prod/Dockerfile
+    restart: always
+    expose:
+      - 4000
+    env_file:
+      - .env
+    depends_on:
+      - db
+    entrypoint: ["entrypoint.sh"]
+    volumes:
+      - static_volume:/www/static
+      - media_volume:/www/media
+
+  celery:
+    build:
+      context: ${BACKEND_PATH}
+      dockerfile: docker/prod/Dockerfile
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - redis
+    entrypoint: celery -A trainer_backend.celery_config:celery_app worker -l INFO -n trainer-worker@%n -Q default
+    volumes:
+      - media_volume:/www/media
+
+  redis:
+    image: redis:latest
+    expose:
+      - "6379"
+
+  db:
+    image: mysql:8.3.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: $DB_NAME
+      MYSQL_USER: $DB_USER
+      MYSQL_PASSWORD: $DB_PASS
+      MYSQL_ROOT_PASSWORD: $DB_ROOT_PASS
+    env_file:
+      - .env
+    volumes:
+      - db_data:/var/lib/mysql
+
+  nginx:
+    restart: always
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+    ports:
+      - "80:80"
+    volumes:
+      - static_volume:/www/static
+      - media_volume:/www/media
+
+volumes:
+  db_data:
+  static_volume:
+  media_volume:
