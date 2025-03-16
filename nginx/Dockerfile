@@ -9,8 +9,7 @@ RUN npm run build
 FROM nginx:stable-alpine
 
 RUN apk add --no-cache certbot
-RUN rm /etc/nginx/conf.d/default.conf
-COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx/nginx.conf /etc/nginx/nginx.conf
 
 COPY --from=builder /app/dist /www
 

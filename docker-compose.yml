@@ -8,7 +8,7 @@ services:
       - .env
     depends_on:
       - db
-    entrypoint: ["runserver.sh"]
+    entrypoint: ["run_server.sh"]
     volumes:
       - static_volume:/www/static
       - ./media:/www/media
