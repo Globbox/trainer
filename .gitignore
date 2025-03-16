@@ -10,11 +10,11 @@ __pycache__/
 static/
 media/
 logs/
+backups/
 
 # ENV файлы
 .env
 .deploy-config
 
 # Папки для deploy
-certs/
 frontend/

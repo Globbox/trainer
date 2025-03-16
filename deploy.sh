@@ -29,7 +29,7 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-docker compose -f docker-compose.yml -p trainer up -d --build
+docker pull "${BACKEND_IMAGE}:${BACKEND_TAG}" && docker compose -f docker-compose.yml -p trainer up -d --build
 if [ $? -ne 0 ]; then
   echo "Ошибка docker compose"
   exit 1

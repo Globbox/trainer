@@ -10,9 +10,9 @@ services:
       - db
     entrypoint: ["runserver.sh"]
     volumes:
-      - logs_volume:/www/logs
       - static_volume:/www/static
-      - media_volume:/www/media
+      - ./media:/www/media
+      - ./logs:/www/logs
 
   celery:
     image: ${BACKEND_IMAGE}:${BACKEND_TAG}
@@ -21,11 +21,24 @@ services:
       - .env
     depends_on:
       - redis
-    entrypoint: celery -A trainer_backend.celery_config:celery_app worker -l INFO -n trainer-worker@%n -Q default
+    entrypoint: ["run_celery.sh"]
     volumes:
-      - logs_volume:/www/logs
       - static_volume:/www/static
-      - media_volume:/www/media
+      - ./media:/www/media
+      - ./logs:/www/logs
+
+  celery-beat:
+    image: ${BACKEND_IMAGE}:${BACKEND_TAG}
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - celery
+    entrypoint: ["run_celery_beat.sh"]
+    volumes:
+      - static_volume:/www/static
+      - ./media:/www/media
+      - ./logs:/www/logs
 
   redis:
     image: redis:latest
@@ -56,12 +69,13 @@ services:
       - "443:443"
       - "80:80"
     volumes:
-      - ./certs:/etc/nginx/certs:ro
       - static_volume:/www/static
-      - media_volume:/www/media
+      - nginx-letsencrypt:/etc/letsencrypt
+      - ./media:/www/media
 
 volumes:
   db_data:
   logs_volume:
   static_volume:
   media_volume:
+  nginx-letsencrypt:
